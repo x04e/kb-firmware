@@ -9,3 +9,6 @@ default:
 flash: default
 	./await-avr.sh
 	avrdude -P /dev/ttyACM0 -p $(arch) -c $(prog) -U flash:w:build/firmware.hex
+
+watch:
+	./watch.sh 'avr-gcc -mmcu=$(arch) -Wall -Os -o /dev/null src/main.c'
