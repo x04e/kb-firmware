@@ -18,7 +18,7 @@
 #define VBUS    BIT(0) // 0:R  - Status of USB VBUS connection
 
 // USBINT - IVBUS Transition interrupt
-#define USBINT  REG(0xE1)
+#define USBINT  REG(0xDA)
 #define VBUSTI  BIT(0) // 0:RW - Set by hardware when transition occurs. Cleared by software
 
 // UDCON
@@ -29,7 +29,7 @@
 #define DETACH  BIT(0) // 1:RW - Physically detach device. Unset to attach
 
 // Power Controller and Status
-#define PLLCSR  REG(0x29)
+#define PLLCSR  REG(0x49)
 #define PINDIV  BIT(4) // 0:RW - Unset for 8MHz ref clock, set for 16MHz
 #define PLLE    BIT(1) // 0:RW - Enable PLL
 #define PLOCK   BIT(0) // 0:R  - Lock clock. Set by hardware to indicate clock is configured
@@ -55,5 +55,5 @@ int main() {
     // Attach USB device
     UDCON &= ~DETACH;
 
-    return 0;
+    while(1) {}
 }
