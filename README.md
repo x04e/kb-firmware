@@ -96,6 +96,7 @@ $ lsmod | grep usbmon
 If you need to enable it, run:
 
 ```bash
+// NOTE: You will have to do this every time your machine is restarted unless you enable the usbmon module permenantly (not recommended)
 $ sudo modprobe usbmon
 ```
 
@@ -133,6 +134,63 @@ $ sudo cat /sys/kernel/debug/usb/usbmon/0u | grep -v ':\(001\|002\|003\|004\)'
 For details about the meaning of the usbmon output, you can review the [kernel usbmon documentation](https://docs.kernel.org/usb/usbmon.html).
 
 You can now attempt to send bytes via the USB controller on your microcontroller and read them from your PC.
+
+#### Wireshark
+
+Wireshark is capable of logging USB traffic in a GUI format. To set it up:
+
+Install wireshark:
+
+```bash
+$ sudo pacman -S wireshark-qt
+```
+
+Create a `usbmon` group:
+
+```bash
+$ sudo groupadd usbmon
+```
+
+Create a `udev` rule for wireshark:
+
+```bash
+cat 'SUBSYSTEM=="usbmon", GROUP=="usbmon", MODE="640"' > sudo tee /etc/udev.d/rules/90-wireshark-usbmon.rules
+```
+
+Update `udev` with the changes:
+
+```bash
+$ sudo udevadm trigger --subsystem-match=usbmon
+```
+
+Finally, add your user to both the `usbmon` and `wireshark` groups:
+
+```bash
+$ sudo usermod -aG usermon <your-username>
+$ sudo usermod -aG wireshark <your-username>
+```
+
+Reboot your machine. Remember to enable the `usbmon` module. Then open wireshark and you should see the usbmon interfaces in Wireshark.
+
+##### Using Wireshark
+
+In Wireshark:
+
+- Connect to the `usbmon0` interface
+- Disable the `USBHUB` protocol to hide packets from the USB hubs themselves (Analyze > Enabled Protocols > Uncheck USBHUB)
+- Filter out devices you don't care about with a filter like:
+
+  ```
+  not (usb.src in { 1.2.3, 1.2.4, 1.2.5 } or usb.addr in { 1.2.3, 1.2.4, 1.2.5 })
+  ```
+
+  where the addresses are the values in the `Source` and `Address` columns
+
+  **Note:** If you want to see new devices being plugged in, you should not filter out your USB hubs. Requests will come in on their .0 endpoint each time a devices is connected, which might be useful.
+
+  **Note:** If you have other USB devices like keyboards, mice, or external hard drives plugged into the same USB Bus that your microcontroller will be plugged into, you may have to keep filtering out new addresses from those devices as they enter an idle state and then resume, aquiring a new address for themselves.
+
+- Plug in your microcontroller. `usbmon`/ the kernel cannot see the deivce address negotiation process, but you should see some initial requests to the 0 address of your USB hub (`lsusb` will show a matching device ID) and then requests coming from a new device ID. This is your controller. These addresses are negotiated when a device is plugged in, so they will change every time. This is why we filter out known addresses.
 
 ### HID protocol (with dmesg)
 
