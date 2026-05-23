@@ -101,6 +101,9 @@
 //#define DTSEQ
 //#define NBUSYBK
 
+#define UDINT    REG(0xE1)
+#define EORSTI   BIT(3)
+
 #define UEINTX   REG(0xE8)
 #define FIFOCON  BIT(7)
 #define NAKINI   BIT(6)
@@ -186,34 +189,40 @@ int main() {
     USBCON |= OTGPADE;
     // Wait for USB VBUS connection
     while (!(USBSTA & VBUS));
+    // Attach USB device
+    UDCON &= ~DETACH;
 
-    // TODO: Register and configure endpoints
-    // Endpoint 0 for protocol configuration/host requests
-    // Leave 0 selected
+
+    // Await End of Reset
+    while(!(UDINT & EORSTI));
+    // Clear End of Reset
+    UDINT &= ~EORSTI;
+
+
+    // Configure endpoints after EOR
     UENUM = UEP0;
     UECONX |= EPEN;
     // Endpoint size 64kb for Full-Speed (USB 2.0)
     UECFG0X = 0;
     UECFG1X = EP_64B | EP_OBK | ALLOC;
-    // Endpoint 1 for device data (HID packets) to be sent
-
+    // Ensure endpoint configuration is correct
     if(!(UESTA0X & CFGOK)){
          error();
     }
 
 
-    // Attach USB device
-    UDCON &= ~DETACH;
+    // Initial Setup packet
+    // Await Setup packet
+    while(!(UEINTX & RXSTPI));
+    // Clear RXSTPI
+    UEINTX &= ~RXSTPI;
 
-    // TODO: Await setup completion
+    // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
 
-    // TODO: Double check this is correctly resetting this interrupt
+    // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
 
-    // TODO: Send byte over USB, read with usbmon from host
 
-    // TODO: Initialise timers for using clocks
-
-    // Check that code reaches here
+    // Code should reach here
     ledOn();
     while(1){}
 }
