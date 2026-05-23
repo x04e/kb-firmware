@@ -1,19 +1,44 @@
 #!/bin/sh
-watchCmd="$1"
+watchCmd=""
+flashCmd=""
+
+while [ "$1" != "" ]; do
+    case "$1" in
+        --watch-cmd)
+            shift
+            watchCmd="$1"
+            shift
+            ;;
+        --flash-cmd)
+            shift
+            flashCmd="$1"
+            shift
+            ;;
+    esac
+done
 
 srcSum=""
 newSum=""
 
 while true; do
+    # Compile code if changes are detected
     newSum="$(find src/ -type f -exec sha256sum {} \; | sha256sum)"
-    if [ "$srcSum" = "$newSum" ]; then
-        sleep 1
-    else
+    if [ "$srcSum" != "$newSum" ]; then
         printf "Compiling... "
         srcSum="$newSum"
-
         $watchCmd &&
             printf "\e[32mOK\e[0m\n" ||
             printf "\e[31mFAILED\e[0m\n"
     fi
+
+    # Flash firmware if bootloader is active
+    if [ -w /dev/ttyACM0 ]; then
+        printf "Flashing... "
+        $flashCmd &&
+            printf "\e[32mFLASHED\e[0m\n" ||
+            printf "\e[31mFLASHING FAILED\e[0m\n"
+        sleep 5
+    fi
+
+    sleep 1
 done
