@@ -7,10 +7,39 @@ void resetBootloaderMode();
 void error();
 void ledOn();
 void ledOff();
+void initUsb();
+void configureUsbEndpoints();
 
 int main() {
     resetBootloaderMode();
 
+    initUsb();
+
+    // Await End of Reset
+    while(!(UDINT & EORSTI));
+    // Clear End of Reset
+    UDINT &= ~EORSTI;
+
+    configureUsbEndpoints();
+
+    // Initial Setup packet
+    // Await Setup packet
+    while(!(UEINTX & RXSTPI));
+    // Clear RXSTPI
+    UEINTX &= ~RXSTPI;
+
+    // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
+
+    // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
+
+
+    // Code should reach here
+    ledOn();
+    while(1){}
+}
+
+// Initialise the USB controller
+void initUsb(){
     // Power-on pads regulator
     UHWCON |= UVREGE;
     // Configure PLL clock speed
@@ -29,15 +58,9 @@ int main() {
     while (!(USBSTA & VBUS));
     // Attach USB device
     UDCON &= ~DETACH;
+}
 
-
-    // Await End of Reset
-    while(!(UDINT & EORSTI));
-    // Clear End of Reset
-    UDINT &= ~EORSTI;
-
-
-    // Configure endpoints after EOR
+void configureUsbEndpoints(){
     UENUM = UEP0;
     UECONX |= EPEN;
     // Endpoint size 64kb for Full-Speed (USB 2.0)
@@ -47,22 +70,6 @@ int main() {
     if(!(UESTA0X & CFGOK)){
          error();
     }
-
-
-    // Initial Setup packet
-    // Await Setup packet
-    while(!(UEINTX & RXSTPI));
-    // Clear RXSTPI
-    UEINTX &= ~RXSTPI;
-
-    // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
-
-    // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
-
-
-    // Code should reach here
-    ledOn();
-    while(1){}
 }
 
 void resetBootloaderMode(){
