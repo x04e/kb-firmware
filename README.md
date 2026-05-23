@@ -1,6 +1,6 @@
 # Keyboard Firmware
 
-This firmware is written for use with mechanical keyboards using the ATmega32U4 chip (Pro Micro). It is written in pure C with no libraries, for fun :)
+This firmware is written for use with mechanical keyboards using the ATmega32U4 chip (Pro Micro)
 
 ### Useful Resources
 
