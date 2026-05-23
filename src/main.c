@@ -1,3 +1,7 @@
+#define F_CPU 16000000UL
+#include <stdint.h>
+#include <util/delay.h>
+
 #define REG(addr) (*(volatile char *) (addr))
 #define BIT(idx) (1 << idx)
 
@@ -118,6 +122,11 @@
 #define Z        BIT(1) // 0:RW - Zero flag
 #define C        BIT(0) // 0:RW - Carry flag
 
+#define PINB    REG(0x23)
+#define DDRB    REG(0x24)
+#define PORTB   REG(0x25)
+#define PB0     BIT(0)
+
 #define PIND    REG(0x29)
 #define DDRD    REG(0x2A)
 #define PORTD   REG(0x2B)
@@ -142,7 +151,25 @@ void error() {
     PORTD &= ~PD5;
 }
 
+void resetBootloaderMode(){
+    /* /dev/ttyACM0 remains active after flashing. Ensure the USB controller
+     * is disconnected and wait for a few ms before initialising it again
+     * to ensure it disconnects and can be flashed again. */
+    UDCON |= DETACH;
+
+    // Burn a few cycles while we wait for the USB controller to disconnect
+    _delay_ms(200);
+
+    // Turn off TX/RX LEDs
+    DDRD |= PD5;
+    PORTD |= PD5;
+    DDRB |= PB0;
+    PORTB |= PB0;
+}
+
 int main() {
+    resetBootloaderMode();
+
     // Power-on pads regulator
     UHWCON |= UVREGE;
     // Configure PLL clock speed
