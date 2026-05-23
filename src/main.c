@@ -118,6 +118,30 @@
 #define Z        BIT(1) // 0:RW - Zero flag
 #define C        BIT(0) // 0:RW - Carry flag
 
+#define PIND    REG(0x29)
+#define DDRD    REG(0x2A)
+#define PORTD   REG(0x2B)
+#define PD0     BIT(0)
+#define PD1     BIT(1)
+#define PD5     BIT(5)
+
+void ledOn() {
+    DDRD |= PD0;
+    PORTD |= PD0;
+}
+
+void ledOff() {
+    DDRD |= PD0;
+    PORTD &= ~PD0;
+}
+
+void error() {
+    // Output PD1 (DDxn 1, PORTxn 1)
+    // Input PD0 (DDxn 0, PORTxn 1)
+    DDRD |= PD5;
+    PORTD &= ~PD5;
+}
+
 int main() {
     // Power-on pads regulator
     UHWCON |= UVREGE;
@@ -146,33 +170,23 @@ int main() {
     UECFG1X = EP_64B | EP_OBK | ALLOC;
     // Endpoint 1 for device data (HID packets) to be sent
 
-    // Select endpoing (EPNUM reg)
-    // Activate the endpoint (EPEN = 1)
-    // Configure (UECFG0X):
-    //    Endpoint direction (EPDIR)
-    //    Endpoint type (EPTYPE)
-    // Configure (UECFG1X):
-    //    Endpoint size (ALLOC, EPSIZE)
-    //    Endpoint bank parametarisation (EPBK)
-    // Check configuration is OK (CFGOK=1)
+    if(!(UESTA0X & CFGOK)){
+         error();
+    }
+
+
+    // Attach USB device
+    UDCON &= ~DETACH;
 
     // TODO: Await setup completion
-    
+
+    // TODO: Double check this is correctly resetting this interrupt
 
     // TODO: Send byte over USB, read with usbmon from host
 
     // TODO: Initialise timers for using clocks
 
-    // Global interrupt enable
-    SREG |= I;
-
-    // Attach USB device
-    UDCON &= ~DETACH;
-
-    while(!(UEINTX & RXSTPI));
-
-    // TODO: Double check this is correctly resetting this interrupt
-    UEINTX = ~RXSTPI;
-
+    // Check that code reaches here
+    ledOn();
     while(1){}
 }
