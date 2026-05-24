@@ -133,3 +133,13 @@
 #define PD0     BIT(0)
 #define PD1     BIT(1)
 #define PD5     BIT(5)
+
+#define UEDATX  REG(0xF1)
+#define DATD7   BIT(7)
+#define DATD6   BIT(6)
+#define DATD5   BIT(5)
+#define DATD4   BIT(4)
+#define DATD3   BIT(3)
+#define DATD2   BIT(2)
+#define DATD1   BIT(1)
+#define DATD0   BIT(0)
