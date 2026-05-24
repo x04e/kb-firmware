@@ -2,6 +2,7 @@
 #define F_CPU 16000000UL
 #include <util/delay.h>
 #include "io.h"
+#include "usb.h"
 
 void resetBootloaderMode();
 void error();
@@ -33,34 +34,7 @@ int main() {
 
     // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
     // Note: USB fields are little-endian so the last byte must be written first!
-    UEDATX = 18; // 1b - bLength
-    UEDATX = 1; // 1b - bDescriptorType
-    UEDATX = 0x00; // 2b - bcdUSB
-    UEDATX = 0x20;
-    UEDATX = 0; // bDeviceClass
-    UEDATX = 0; // bDeviceSubclass
-    UEDATX = 0; // bDeviceProtocol
-    UEDATX = 64; // bMaxPacketSize
-    // 2b - idVendor
-    UEDATX = 0xED;
-    UEDATX = 0xFE;
-    // 2b - idProduct
-    UEDATX = 0x4E;
-    UEDATX = 0x00;
-    // 2b - bcdDevice
-    UEDATX = 0;
-    UEDATX = 0;
-    // 1b - iManufacturer
-    UEDATX = 1;
-    // 1b - iProduct
-    UEDATX = 2;
-    // 1b - iSerialNumber
-    UEDATX = 3;
-    // 1b - bNumConfigurations
-    UEDATX = 1;
-
-    // Clear TXINI to send
-    UEINTX &= ~TXINI;
+    usbSendDeviceDescriptor();
 
 
     // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
