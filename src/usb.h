@@ -37,40 +37,37 @@ static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
     .bNumConfigurations = 1
 };
 
-void usbWriteUint8t(uint8_t b){
-    UEDATX = b;
-}
+/* Clear TXINI to send USB packet */
+#define usbSendPacket() \
+    UEINTX &= ~TXINI;
 
-void usbWriteUint16t(uint16_t b){
-    UEDATX = (b >> 0) & 0xFF;
-    UEDATX = (b >> 8) & 0xFF;
-}
-
-void usbWriteUint32t(uint32_t b){
-    usbWriteUint16t(b);
-    usbWriteUint16t((b << 16) & 0xFF);
-}
-
-void usbWriteUint64t(uint64_t b){
-    usbWriteUint32t(b);
-    usbWriteUint32t((b << 16) & 0xFF);
-}
+/* Individual USB descriptor fields are send in reverse-byte order with
+ * least-significant byte sent first. For however large the field is, we
+ * take each byte one-at-a-time in reverse order and write it to UEDATX. */
+#define usbWriteField(b) \
+    for(uint8_t i = 0; i < sizeof(b); i++){ \
+        /* The "& 0xFF" is a bitmask of a single byte to ensure we only */ \
+         /* get those bits. Unecessary for an 8-bit register but good */ \
+         /* to do in general just in case we're writing to larger registers */ \
+         /* or variables */ \
+        UEDATX = (b >> (8 * i)) & 0xFF; \
+    }
 
 void usbSendDeviceDescriptor(){
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bLength);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bDescriptorType);
-    usbWriteUint16t(DEVICE_DESCRIPTOR.bcdUSB);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bDeviceClass);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bDeviceSubclass);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bDeviceProtocol);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bMaxPacketSize);
-    usbWriteUint16t(DEVICE_DESCRIPTOR.idVendor);
-    usbWriteUint16t(DEVICE_DESCRIPTOR.idProduct);
-    usbWriteUint16t(DEVICE_DESCRIPTOR.bcdDevice);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.iManufacturer);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.iProduct);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.iSerialNumber);
-    usbWriteUint8t(DEVICE_DESCRIPTOR.bNumConfigurations);
-    // Clear TXINI to send
-    UEINTX &= ~TXINI;
+    usbWriteField(DEVICE_DESCRIPTOR.bLength);
+    usbWriteField(DEVICE_DESCRIPTOR.bDescriptorType);
+    usbWriteField(DEVICE_DESCRIPTOR.bcdUSB);
+    usbWriteField(DEVICE_DESCRIPTOR.bDeviceClass);
+    usbWriteField(DEVICE_DESCRIPTOR.bDeviceSubclass);
+    usbWriteField(DEVICE_DESCRIPTOR.bDeviceProtocol);
+    usbWriteField(DEVICE_DESCRIPTOR.bMaxPacketSize);
+    usbWriteField(DEVICE_DESCRIPTOR.idVendor);
+    usbWriteField(DEVICE_DESCRIPTOR.idProduct);
+    usbWriteField(DEVICE_DESCRIPTOR.bcdDevice);
+    usbWriteField(DEVICE_DESCRIPTOR.iManufacturer);
+    usbWriteField(DEVICE_DESCRIPTOR.iProduct);
+    usbWriteField(DEVICE_DESCRIPTOR.iSerialNumber);
+    usbWriteField(DEVICE_DESCRIPTOR.bNumConfigurations);
+
+    usbSendPacket();
 }
