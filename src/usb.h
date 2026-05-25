@@ -23,7 +23,7 @@ typedef struct {
 static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
     .bLength = 18,
     .bDescriptorType = 1,
-    .bcdUSB = 32,
+    .bcdUSB = 0x200,
     .bDeviceClass = 0,
     .bDeviceSubclass = 0,
     .bDeviceProtocol = 0,
