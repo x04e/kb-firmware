@@ -39,7 +39,11 @@ static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
 
 /* Clear TXINI to send USB packet */
 #define usbSendPacket() \
-    UEINTX &= ~TXINI;
+    /* Send data */ \
+    UEINTX &= ~(TXINI | FIFOCON); \
+    /* Wait for OUT ZLP and handshake it */ \
+    while(!(UEINTX & RXOUTI)); \
+    UEINTX &= ~(RXOUTI | FIFOCON);
 
 /* Individual USB descriptor fields are send in reverse-byte order with
  * least-significant byte sent first. For however large the field is, we
