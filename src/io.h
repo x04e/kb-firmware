@@ -98,18 +98,25 @@
 //#define DTSEQ
 //#define NBUSYBK
 
+// USB Interrupt
 #define UDINT    REG(0xE1)
-#define EORSTI   BIT(3)
+#define UPRSMI   BIT(6) // 0:RW - Set by hardware when sending a resume (upstream resume). Cleared by firmware (USB clocks must be enabled)
+#define EORSMI   BIT(5) // 0:RW - Set by hardware when an End of Resume signal is initiated by host. Cleared by firmware
+#define WAKEUPI  BIT(4) // 0:RW - Set by hardware when the USB controller is reactivated by a non-idle signal from the host. Cleared by firmware (USB clocks must be enabled)
+#define EORSTI   BIT(3) // 0:RW - Set by hardware when an End of Reset has been detected. Cleared by software
+#define SOFI     BIT(2) // 0:RW - Set by hardware when a Start of Frame has been detected
+#define SUSPI    BIT(0) // 0:RW - Suspend interrupt
 
+// USB Endpoint X Interrupt Register, were X is selected with UENUM
 #define UEINTX   REG(0xE8)
-#define FIFOCON  BIT(7)
-#define NAKINI   BIT(6)
-#define RWAL     BIT(5)
-#define NAKOUTI  BIT(4)
-#define RXSTPI   BIT(3)
-#define RXOUTI   BIT(2)
-#define STALLEDI BIT(1)
-#define TXINI    BIT(0)
+#define FIFOCON  BIT(7) // 0:RW - For Out/Setup endpoint: Set when new OUT message is stored in the current bank at the same time as RXOUT/RXSTP. CLear to free current bank. For IN endpoint: set when the current bank is free at the same time as TXIN. Clear to send FIFO data.
+#define NAKINI   BIT(6) // 0:RW - NAK IN. Set when a NAK has been received in response to an IN request from the host.
+#define RWAL     BIT(5) // 0:RW - Read/Write Allowed. For an IN endpoint: the current bank is not full, can receive data. For an OUT endpoint: The current bank is not empty, can read data. Never set if STALLRQ is set.
+#define NAKOUTI  BIT(4) // 0:RW - NAK OUT. Set when a NAK has been sent in response to an OUT/PING request from the host.
+#define RXSTPI   BIT(3) // 0:RW - Received SETUP. Set when the bank contains a valid SETUP packet. Clear to complete the handshake. Inactive for IN endpoints
+#define RXOUTI   BIT(2) // 0:RW - Received OUT data and the bank contains a new packet. Clear to handshake the interrupt. For IN endpoint, set to kill the current bank
+#define STALLEDI BIT(1) // 0:RW - Set when a STALL handshake has been sent or when a CRC error has been detected in an isochronous OUT endpoint
+#define TXINI    BIT(0) // 0:RW - Transmitter ready. Indicates the current bank is free. Clear to handshake the interrupt.
 
 // AVR Status Register
 #define SREG     REG(0x5F) // Write addr
@@ -143,3 +150,7 @@
 #define DATD2   BIT(2)
 #define DATD1   BIT(1)
 #define DATD0   BIT(0)
+
+// USB Address register
+#define UDADDR  REG(0xE3)
+#define ADDEN   BIT(7) // 0:RW - Address enable bit. Set to use address
