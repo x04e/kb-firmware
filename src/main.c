@@ -74,6 +74,8 @@ void configureUsbEndpoints(){
     UECONX |= EPEN;
     // Endpoint size 64kb for Full-Speed (USB 2.0)
     UECFG0X = 0;
+    // Allocate 64 Bytes with 1 bank. If multiple banks are used, see 22.13.1 for
+    // how to properly clear and read FIFOCON/RXOUTI multiple times.
     UECFG1X = EP_64B | EP_OBK | ALLOC;
     // Ensure endpoint configuration is correct
     if(!(UESTA0X & CFGOK)){
