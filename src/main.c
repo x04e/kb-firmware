@@ -13,38 +13,28 @@ void ledOn();
 void ledOff();
 void initUsb();
 void configureUsbEndpoints();
+void handleUsbEndOfReset();
+void handleUsbSetupPacket();
 
 int main() {
     resetBootloaderMode();
-
     initUsb();
 
-    // Await End of Reset
-    while(!(UDINT & EORSTI));
-    // Clear End of Reset
-    UDINT &= ~EORSTI;
+    while(1){
+        handleUsbEndOfReset();
+        handleUsbSetupPacket();
 
-    configureUsbEndpoints();
-
-    // Initial Setup packet
-    // Await Setup packet
-    while(!(UEINTX & RXSTPI));
-    // Clear RXSTPI
-    UEINTX &= ~RXSTPI;
-
-    // Note: For control endpoints, RWAL and FIFOCON are always 0.
-    // Waiting for these interrupts is pointless
-
-    // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
-    // Note: USB fields are little-endian so the last byte must be written first!
-    usbSendDeviceDescriptor();
+        // Note: For control endpoints, RWAL and FIFOCON are always 0.
+        // Waiting for these interrupts is pointless
+        
+        // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
+        // Note: USB fields are little-endian so the last byte must be written first!
 
 
-    // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
-
-    // Code should reach here
-    ledOn();
-    while(1){}
+        // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
+        
+        // Code should reach here
+    }
 }
 
 // Initialise the USB controller
@@ -79,7 +69,43 @@ void configureUsbEndpoints(){
     UECFG1X = EP_64B | EP_OBK | ALLOC;
     // Ensure endpoint configuration is correct
     if(!(UESTA0X & CFGOK)){
-         error();
+        error();
+    }
+}
+
+void handleUsbEndOfReset(){
+    // End of Reset
+    if(!(UDINT & EORSTI)) {
+        return;
+    }
+
+    // Clear End of Reset
+    UDINT &= ~EORSTI;
+    configureUsbEndpoints();
+}
+
+void handleUsbSetupPacket(){
+    // Setup packet
+    if(!(UEINTX & RXSTPI)){
+        return;
+    }
+
+    uint8_t x;
+    for(uint8_t i = 0; i < 2; i++) {
+        x = UEDATX;
+    }
+
+    // Clear RXSTPI and endpoint bank
+    UEINTX &= ~(RXSTPI);
+
+    // TODO: Refactor with structs for each packet type and helper functions for responses
+    switch(x){
+        case 0x06: // GET_DESCRIPTOR
+            usbSendDeviceDescriptor();
+            break;
+        default:
+            error();
+            break;
     }
 }
 
