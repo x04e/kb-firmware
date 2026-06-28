@@ -6,6 +6,9 @@
 
 void resetBootloaderMode();
 void error();
+void errorOff();
+void error2();
+void error2Off();
 void ledOn();
 void ledOff();
 void initUsb();
@@ -88,16 +91,32 @@ void resetBootloaderMode(){
     _delay_ms(200);
 
     // Turn off TX/RX LEDs
-    DDRD |= PD5;
-    PORTD |= PD5;
-    DDRB |= PB0;
-    PORTB |= PB0;
+    errorOff();
+    error2Off();
 }
 
 void error() {
     // TXLED
     DDRD |= PD5;
     PORTD &= ~PD5;
+}
+
+void errorOff() {
+    // TXLED
+    DDRD |= PD5;
+    PORTD |= PD5;
+}
+
+void error2() {
+    // TXLED
+    DDRB |= PB0;
+    PORTB &= ~PB0;
+}
+
+void error2Off() {
+    // TXLED
+    DDRB |= PB0;
+    PORTB |= PB0;
 }
 
 void ledOn() {
