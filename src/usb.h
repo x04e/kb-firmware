@@ -37,7 +37,16 @@ static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
     .bNumConfigurations = 1
 };
 
-/* Clear TXINI to send USB packet */
+#define usbSetAddress() \
+    /* Copy address */ \
+    UDADDR = (UEDATX & ~ADDEN); \
+    /* ACK with zero-length packet */ \
+    UEINTX &= ~TXINI; \
+    /* Wait for IN ZLP */ \
+    while(!(UEINTX & TXINI)); \
+    /* Set address */ \
+    UDADDR |= ADDEN;
+
 #define usbSendPacket() \
     /* Send data */ \
     UEINTX &= ~(TXINI | FIFOCON); \

@@ -101,8 +101,16 @@ void handleUsbSetupPacket(){
     // TODO: Refactor with structs for each packet type and helper functions for responses
     switch(x){
         case 0x06: // GET_DESCRIPTOR
+            if(!(UEINTX & RWAL)){
+                error();
+            }
             usbSendDeviceDescriptor();
             break;
+        case 0x05: // SET_ADDRESS
+            usbSetAddress();
+            break;
+        // TODO: Handle GET_DESCRIPTOR - DEVICE_QUALIFIER
+        // TODO: Handle GET_DESCRIPTOR - CONFIGURATION
         default:
             error();
             break;
