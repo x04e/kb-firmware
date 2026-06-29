@@ -8,9 +8,9 @@ default:
 
 flash: default
 	./await-avr.sh
-	avrdude -P /dev/ttyACM0 -p $(arch) -c $(prog) -U flash:w:build/firmware.hex
+	avrdude -P /dev/ttyACM0 -p $(arch) -c $(prog) -U flash:w:build/firmware.hex $(ARGS)
 
 watch:
 	./watch.sh \
-		--watch-cmd 'make' \
-		--flash-cmd 'make flash'
+		--watch-cmd 'make -s' \
+		--flash-cmd 'make -s flash ARGS=-qq'

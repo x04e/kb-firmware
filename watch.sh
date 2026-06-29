@@ -33,10 +33,10 @@ while true; do
 
     # Flash firmware if bootloader is active
     if [ -w /dev/ttyACM0 ]; then
-        printf "Flashing... "
-        $flashCmd &&
-            printf "\e[32mFLASHED\e[0m\n" ||
-            printf "\e[31mFLASHING FAILED\e[0m\n"
+        printf "Flashing...  "
+        bash -c "$flashCmd >/dev/null" &&
+            printf "\e[32mOK\e[0m\n" ||
+            printf "\e[31mFAILED\e[0m\n"
         sleep 5
     fi
 
