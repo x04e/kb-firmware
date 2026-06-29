@@ -20,25 +20,25 @@ int main() {
     resetBootloaderMode();
     initUsb();
 
-    while(1){
+    while (1) {
         handleUsbEndOfReset();
         handleUsbSetupPacket();
 
         // Note: For control endpoints, RWAL and FIFOCON are always 0.
         // Waiting for these interrupts is pointless
-        
+
         // Read packet from UEDATX and handle GET_DESCRIPTOR (Clear TXINI to send)
         // Note: USB fields are little-endian so the last byte must be written first!
 
 
         // TODO: Repeat for second reset/setup for subsequent GET_DESCRIPTOR requests
-        
+
         // Code should reach here
     }
 }
 
 // Initialise the USB controller
-void initUsb(){
+void initUsb() {
     // Power-on pads regulator
     UHWCON |= UVREGE;
     // Configure PLL clock speed
@@ -59,7 +59,7 @@ void initUsb(){
     UDCON &= ~DETACH;
 }
 
-void configureUsbEndpoints(){
+void configureUsbEndpoints() {
     UENUM = UEP0;
     UECONX |= EPEN;
     // Endpoint size 64kb for Full-Speed (USB 2.0)
@@ -68,14 +68,14 @@ void configureUsbEndpoints(){
     // how to properly clear and read FIFOCON/RXOUTI multiple times.
     UECFG1X = EP_64B | EP_OBK | ALLOC;
     // Ensure endpoint configuration is correct
-    if(!(UESTA0X & CFGOK)){
+    if (!(UESTA0X & CFGOK)) {
         error();
     }
 }
 
-void handleUsbEndOfReset(){
+void handleUsbEndOfReset() {
     // End of Reset
-    if(!(UDINT & EORSTI)) {
+    if (!(UDINT & EORSTI)) {
         return;
     }
 
@@ -84,14 +84,14 @@ void handleUsbEndOfReset(){
     configureUsbEndpoints();
 }
 
-void handleUsbSetupPacket(){
+void handleUsbSetupPacket() {
     // Setup packet
-    if(!(UEINTX & RXSTPI)){
+    if (!(UEINTX & RXSTPI)) {
         return;
     }
 
     uint8_t x;
-    for(uint8_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 2; i++) {
         x = UEDATX;
     }
 
@@ -99,9 +99,9 @@ void handleUsbSetupPacket(){
     UEINTX &= ~(RXSTPI);
 
     // TODO: Refactor with structs for each packet type and helper functions for responses
-    switch(x){
+    switch (x) {
         case 0x06: // GET_DESCRIPTOR
-            if(!(UEINTX & RWAL)){
+            if (!(UEINTX & RWAL)) {
                 error();
             }
             usbSendDeviceDescriptor();
@@ -109,15 +109,15 @@ void handleUsbSetupPacket(){
         case 0x05: // SET_ADDRESS
             usbSetAddress();
             break;
-        // TODO: Handle GET_DESCRIPTOR - DEVICE_QUALIFIER
-        // TODO: Handle GET_DESCRIPTOR - CONFIGURATION
+            // TODO: Handle GET_DESCRIPTOR - DEVICE_QUALIFIER
+            // TODO: Handle GET_DESCRIPTOR - CONFIGURATION
         default:
             error();
             break;
     }
 }
 
-void resetBootloaderMode(){
+void resetBootloaderMode() {
     /* /dev/ttyACM0 remains active after flashing. Ensure the USB controller
      * is disconnected and wait for a few ms before initialising it again
      * to ensure it disconnects and can be flashed again. */

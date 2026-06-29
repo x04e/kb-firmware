@@ -66,7 +66,7 @@ static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
         UEDATX = (b >> (8 * i)) & 0xFF; \
     }
 
-void usbSendDeviceDescriptor(){
+void usbSendDeviceDescriptor() {
     usbWriteField(DEVICE_DESCRIPTOR.bLength);
     usbWriteField(DEVICE_DESCRIPTOR.bDescriptorType);
     usbWriteField(DEVICE_DESCRIPTOR.bcdUSB);

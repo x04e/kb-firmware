@@ -1,0 +1,15 @@
+{
+    "C_Cpp.vcFormat.indent.caseContents": true,
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.lambda": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.namespace": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.type": "sameLine",
+    "C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyFunction": true,
+    "C_Cpp.vcFormat.newLine.closeBraceSameLine.emptyType": true,
+    "C_Cpp.vcFormat.space.afterCastCloseParenthesis": false,
+    "C_Cpp.vcFormat.indent.caseLabels": true,
+    "C_Cpp.vcFormat.indent.caseContentsWhenBlock": true,
+    "C_Cpp.vcFormat.indent.braces": false,
+    "C_Cpp.vcFormat.indent.accessSpecifiers": true,
+}
