@@ -1,6 +1,6 @@
 
-#define REG(addr) (*(volatile char *) (addr))
-#define BIT(idx) (1 << idx)
+#define REG(addr) (*(volatile uint8_t *) (addr))
+#define BIT(idx) ((uint8_t)(1 << idx))
 
 // UHWCON - Pad regulator
 #define UHWCON  REG(0xD7)
@@ -34,7 +34,6 @@
 #define PINDIV  BIT(4) // 0:RW - Unset for 8MHz ref clock, set for 16MHz
 #define PLLE    BIT(1) // 0:RW - Enable PLL
 #define PLOCK   BIT(0) // 0:R  - Lock clock. Set by hardware to indicate clock is configured
-
 
 // USB Endpoint selector
 #define UENUM REG(0xE9) // Accepts 0-6 (first 3 bits) as the endpoint number. 0b111 is forbidden

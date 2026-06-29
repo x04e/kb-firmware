@@ -3,6 +3,14 @@
 #include "io.h"
 
 typedef struct {
+    uint8_t bmRequestType;
+    uint8_t bRequest;
+    uint16_t wValue;
+    uint16_t wIndex;
+    uint16_t wLength;
+} SetupPacket;
+
+typedef struct {
     uint8_t  bLength;
     uint8_t  bDescriptorType;
     uint16_t bcdUSB;
@@ -37,15 +45,16 @@ static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
     .bNumConfigurations = 1
 };
 
-#define usbSetAddress() \
-    /* Copy address */ \
-    UDADDR = (UEDATX & ~ADDEN); \
-    /* ACK with zero-length packet */ \
-    UEINTX &= ~TXINI; \
-    /* Wait for IN ZLP */ \
-    while(!(UEINTX & TXINI)); \
-    /* Set address */ \
+void usbSetAddress(SetupPacket sp) {
+    /* Copy address */
+    UDADDR = (sp.wValue & ~ADDEN);
+    /* ACK with zero-length packet */
+    UEINTX &= ~(TXINI | FIFOCON);
+    /* Wait for IN ZLP */
+    while (!(UEINTX & TXINI));
+    /* Set address */
     UDADDR |= ADDEN;
+}
 
 #define usbSendPacket() \
     /* Send data */ \
@@ -61,12 +70,47 @@ static const DeviceDescriptor DEVICE_DESCRIPTOR PROGMEM = {
     for(uint8_t i = 0; i < sizeof(b); i++){ \
         /* The "& 0xFF" is a bitmask of a single byte to ensure we only */ \
          /* get those bits. Unecessary for an 8-bit register but good */ \
-         /* to do in general just in case we're writing to larger registers */ \
+        /* to do in general just in case we're writing to larger registers */ \
          /* or variables */ \
         UEDATX = (b >> (8 * i)) & 0xFF; \
     }
 
-void usbSendDeviceDescriptor() {
+uint8_t usbReadUint8t() {
+    return (uint8_t)UEDATX;
+}
+
+uint16_t usbReadUint16t() {
+    uint16_t value = 0;
+    value |= (uint16_t)UEDATX;
+    value |= (uint16_t)UEDATX << 8;
+    return value;
+}
+
+uint32_t usbReadUint32t() {
+    uint32_t value = 0;
+    value |= (uint32_t)UEDATX;
+    value |= (uint32_t)UEDATX << 8;
+    value |= (uint32_t)UEDATX << 16;
+    value |= (uint32_t)UEDATX << 24;
+    return value;
+}
+
+SetupPacket usbReadSetupPacket() {
+    SetupPacket sp = {
+        .bmRequestType = usbReadUint8t(),
+        .bRequest = usbReadUint8t(),
+        .wValue = usbReadUint16t(),
+        .wIndex = usbReadUint16t(),
+        .wLength = usbReadUint16t()
+    };
+
+    // Clear RXSTPI and endpoint bank
+    UEINTX &= ~(RXSTPI);
+    return sp;
+}
+
+void usbSendDeviceDescriptor(SetupPacket sp) {
+    //TODO: Handle sub-requests
     usbWriteField(DEVICE_DESCRIPTOR.bLength);
     usbWriteField(DEVICE_DESCRIPTOR.bDescriptorType);
     usbWriteField(DEVICE_DESCRIPTOR.bcdUSB);

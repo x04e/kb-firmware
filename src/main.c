@@ -90,29 +90,19 @@ void handleUsbSetupPacket() {
         return;
     }
 
-    uint8_t x;
-    for (uint8_t i = 0; i < 2; i++) {
-        x = UEDATX;
-    }
-
-    // Clear RXSTPI and endpoint bank
-    UEINTX &= ~(RXSTPI);
-
+    SetupPacket sp = usbReadSetupPacket();
     // TODO: Refactor with structs for each packet type and helper functions for responses
-    switch (x) {
+    switch (sp.bRequest) {
         case 0x06: // GET_DESCRIPTOR
-            if (!(UEINTX & RWAL)) {
-                error();
-            }
-            usbSendDeviceDescriptor();
+            usbSendDeviceDescriptor(sp);
             break;
         case 0x05: // SET_ADDRESS
-            usbSetAddress();
+            usbSetAddress(sp);
             break;
             // TODO: Handle GET_DESCRIPTOR - DEVICE_QUALIFIER
             // TODO: Handle GET_DESCRIPTOR - CONFIGURATION
         default:
-            error();
+            error2();
             break;
     }
 }
