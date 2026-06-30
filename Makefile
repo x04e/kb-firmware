@@ -2,7 +2,7 @@ arch = atmega32u4
 prog = avr109
 
 default:
-	avr-gcc -mmcu=$(arch) -Wall -Os -o build/firmware.elf src/main.c
+	avr-gcc -mmcu=$(arch) -Wall -Os -o build/firmware.elf src/*.c
 	avr-objcopy -j .text -j .data -O ihex build/firmware.elf build/firmware.hex
 	rm build/firmware.elf
 

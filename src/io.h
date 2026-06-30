@@ -1,4 +1,4 @@
-
+#include <stdint.h>
 #define REG(addr) (*(volatile uint8_t *) (addr))
 #define BIT(idx) ((uint8_t)(1 << idx))
 
@@ -153,3 +153,10 @@
 // USB Address register
 #define UDADDR  REG(0xE3)
 #define ADDEN   BIT(7) // 0:RW - Address enable bit. Set to use address
+
+void error();
+void errorOff();
+void error2();
+void error2Off();
+void ledOn();
+void ledOff();
