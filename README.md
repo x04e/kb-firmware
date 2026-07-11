@@ -181,7 +181,7 @@ In Wireshark:
 - Filter out devices you don't care about with a filter like:
 
   ```
-  not (usb.src in { 1.2.3, 1.2.4, 1.2.5 } or usb.addr in { 1.2.3, 1.2.4, 1.2.5 })
+  not (usb.bus_id == 1 and usb.device_address in { 5, 7, 29 })
   ```
 
   where the addresses are the values in the `Source` and `Address` columns
