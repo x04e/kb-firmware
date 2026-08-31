@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/lib/avr/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/avr-gcc",
