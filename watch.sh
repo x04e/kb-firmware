@@ -32,12 +32,18 @@ while true; do
     fi
 
     # Flash firmware if bootloader is active
-    if [ -w /dev/ttyACM0 ]; then
-        printf "Flashing...  "
-        bash -c "$flashCmd >/dev/null" &&
-            printf "\e[32mOK\e[0m\n" ||
-            printf "\e[31mFAILED\e[0m\n"
-        sleep 5
+    if [ -e /dev/ttyACM0 ]; then
+        if [ -w /dev/ttyACM0 ]; then
+            printf "Flashing...  "
+            bash -c "$flashCmd >/dev/null" &&
+                printf "\e[32mOK\e[0m\n" ||
+                printf "\e[31mFAILED\e[0m\n"
+            sleep 5
+        else
+            printf "\e[31mFAILED\e[0m - /dev/ttyACM0 is not writable! You may need to grant your user permission to write to serial ports. Permissions below:\n"
+            printf "    "; ls -lhA /dev/ttyACM0
+            exit 1
+        fi
     fi
 
     sleep 1
